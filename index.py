@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium import webdriver
 from selenium.webdriver.common.proxy import Proxy, ProxyType
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from getUserdata import get_phone_number,get_user_info,get_validation_code
+from getUserdata import get_user_info,get_validation_code
 # manage time sleep 
 from time import sleep
 import random
