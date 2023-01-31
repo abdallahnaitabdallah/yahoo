@@ -1,17 +1,10 @@
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-#set proxy import 
+from selenium.webdriver.common.by import By 
 from selenium import webdriver
-from selenium.webdriver.common.proxy import Proxy, ProxyType
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium.webdriver.support.ui import Select
-
-# manage time sleep 
 from time import sleep
 import random
-
-#csv 
 import csv
 
 USER_INFO = []
@@ -116,7 +109,7 @@ def create(index):
     DATA['field']["email"] = firstname+"_"+lastname+"_"+str(random.randint(1,1000))
     DATA['field']["password"] = "Azerty$$$123@"
     DATA['field']["year_of_birth"] = random.choice(YEARS)
-    DATA['field']['phone_number'] = user["phone"]
+    DATA['field']['phone_number'] = 713123123123
 
     #save the user information in USER_INFO list
     USER_INFO.append(DATA["field"])   
