@@ -117,14 +117,14 @@ def create(index):
 
     browser.get(url)
     assert "Yahoo" in browser.title
-    clear_and_input("usernamereg-firstName",DATA['field']['first_name'],browser)
-    clear_and_input("usernamereg-lastName",DATA['field']['last_name'],browser)
-    clear_and_input("usernamereg-userId",DATA['field']['email'],browser)
-    clear_and_input("usernamereg-password",DATA['field']['password'],browser)
-    clear_and_input("usernamereg-birthYear",DATA['field']['year_of_birth'],browser)
+    clear_and_input("usernamereg-firstName",DATA['first_name'],browser)
+    clear_and_input("usernamereg-lastName",DATA['last_name'],browser)
+    clear_and_input("usernamereg-userId",DATA['email'],browser)
+    clear_and_input("usernamereg-password",DATA['password'],browser)
+    clear_and_input("usernamereg-birthYear",DATA['year_of_birth'],browser)
     submit_data(browser)
     sleep(2)
-    clear_and_input("usernamereg-phone",DATA['field']['phone_number'],browser)
+    clear_and_input("usernamereg-phone",DATA['phone_number'],browser)
     submit_data(browser)
 
     if index ==NUMBER_TO_CREATE:
