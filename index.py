@@ -1,13 +1,17 @@
+import imp
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 #set proxy import 
 from selenium import webdriver
 from selenium.webdriver.common.proxy import Proxy, ProxyType
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from getUserdata import get_user_info,get_validation_code
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
+from selenium.webdriver.support.ui import Select
+
 # manage time sleep 
 from time import sleep
 import random
+
 #csv 
 import csv
 
@@ -34,94 +38,102 @@ YEARS = [2000,1999,1998,1997,1996,1995,1994,1993,1992,1991,
 1920,1919,1918,1917,1916,1915,1914,1913,1912,1911,
 1910,1909,1908,1907,1906,1905,1904,1903,1902,1901]
 
-HOST = "38.143.183.202"
+HOST = ["46.37.124.22","46.37.124.23","89.163.252.127","89.163.252.114","185.38.149.144","185.38.149.146","185.38.149.147","185.38.149.29","185.38.149.78","185.38.149.74","185.38.149.76",
+"46.37.124.24","185.38.149.171","46.37.124.20","89.163.252.111","89.163.252.108","185.158.241.20","185.158.241.21","185.158.241.18","185.158.241.17","185.158.241.19",
+"185.38.149.145","185.38.149.75"]
 PORT = "92"
 
+username = 'abdallah_nait'
+pwd = 'Nait_abdallah592@'
 
+def get_user_info(browser:webdriver,index:int):
+     
+    browser.switch_to.window(browser.window_handles[0])
+    browser.find_element(By.ID,'genbtn').click()
+    user = browser.find_element(By.CLASS_NAME,'address').find_element(By.TAG_NAME,'h3').text
+    user = user.split(' ')
+    del user[1]
+    firstname= str(user[0])
+    lastname = str(user[1])
+    browser.switch_to.window(browser.window_handles[1])
+    select = Select(browser.find_element(By.TAG_NAME, "select")).select_by_index(index)
+    return firstname,lastname
+
+def get_validation_code(browser) -> int:
+
+    browser.switch_to.window(browser.window_handles[1])
+    browser.find_element(By.TAG_NAME,"form").submit()
+    return 0
+    
 def my_proxy(PROXY_HOST,PROXY_PORT):
-        fp = webdriver.FirefoxProfile()
-        # Direct = 0, Manual = 1, PAC = 2, AUTODETECT = 4, SYSTEM = 5
-        print (PROXY_PORT)
-        print (PROXY_HOST)
-        fp.set_preference("network.proxy.type", 1)
-        fp.set_preference("network.proxy.http",PROXY_HOST)
-        fp.set_preference("network.proxy.http_port",int(PROXY_PORT))
-        fp.set_preference("network.proxy.ssl",PROXY_HOST)
-        fp.set_preference("network.proxy.ssl_port",int(PROXY_PORT))
-        fp.set_preference("general.useragent.override","whater_useragent")
-        fp.update_preferences()
-        return webdriver.Firefox(firefox_profile=fp)
+    
+    fp = webdriver.FirefoxProfile()
+    # Direct = 0, Manual = 1, PAC = 2, AUTODETECT = 4, SYSTEM = 5
+    print (PROXY_PORT)
+    print (PROXY_HOST)
+    fp.set_preference("network.proxy.type", 1)
+    fp.set_preference("network.proxy.http",PROXY_HOST)
+    fp.set_preference("network.proxy.http_port",int(PROXY_PORT))
+    fp.set_preference("network.proxy.ssl",PROXY_HOST)
+    fp.set_preference("network.proxy.ssl_port",int(PROXY_PORT))
+    fp.set_preference("general.useragent.override","whater_useragent")
+    fp.update_preferences()
+    binary = FirefoxBinary('C:\\Program Files\\Mozilla Firefox\\firefox.exe')
+    browser = webdriver.Firefox(executable_path=r'C:\\WebDrivers\\geckodriver.exe', firefox_binary=binary,firefox_profile=fp)
 
+    return browser
 
-def clear_and_input(ID,VALUE):
+def clear_and_input(ID,VALUE,browser):
     elem = browser.find_element(By.ID,ID)
     elem.clear()
     elem.send_keys(VALUE)
     sleep(2)
 
-def submit_data():
+def submit_data(browser):
     browser.find_element(By.ID,"reg-submit-button").click()
 
+def create(index):
+    browser = my_proxy(random.choice(HOST),PORT)
+    browser.get("https://www.fakenamegenerator.com/gen-random-us-uk.php")
 
-def create():
-    browser = my_proxy(HOST,PORT)
-    #browser = webdriver.Firefox()
-    
-    browser.get('https://www.fakenamegenerator.com/gen-random-us-uk.php')
-    
     # create new tab for vsimcard and log in 
     browser.execute_script("window.open('');")
     browser.switch_to.window(browser.window_handles[1])
-   
+
     browser.get("https://vsimcard.com/login.php")
-    assert "Vsimcard" in browser.title
     browser.find_element(By.NAME,"username").send_keys(username)
     sleep(1)
     browser.find_element(By.NAME,"password").send_keys(pwd)
     sleep(1)
     browser.find_element(By.TAG_NAME,"form").submit()
     sleep(5)
+    firstname,lastname = get_user_info(browser,index)
     
-    user = get_user_info(browser)
-    code_validation = get_validation_code(browser):
-             
     # fill all user data in DATA dict
+
     DATA['url'] = "https://login.yahoo.com/account/create"
-    DATA['field']["first_name"] = user["firstname"]
-    DATA['field']["last_name"] = user["lastname"]
-    DATA['field']["email"] = user["firstname"]+"_"+user["lastname"]+"_"+random.randint(1,1000)
+    DATA['field']["first_name"] = firstname
+    DATA['field']["last_name"] = lastname
+    DATA['field']["email"] = firstname+"_"+lastname+"_"+str(random.randint(1,1000))
     DATA['field']["password"] = "Azerty$$$123@"
     DATA['field']["year_of_birth"] = random.choice(YEARS)
     DATA['field']['phone_number'] = user["phone"]
-    
+
     #save the user information in USER_INFO list
-    USER_INFO.append(DATA["field"])
-    
+    USER_INFO.append(DATA["field"])   
+
     browser.execute_script("window.open('');")
     browser.switch_to.window(browser.window_handles[2])
+
     browser.get(DATA['url'])
     assert "Yahoo" in browser.title
-
-    clear_and_input("usernamereg-firstName",DATA['field']['first_name'])
-    clear_and_input("usernamereg-lastName",DATA['field']['last_name'])
-    clear_and_input("usernamereg-userId",DATA['field']['email'])
-    clear_and_input("usernamereg-password",DATA['field']['password'])
-    clear_and_input("usernamereg-birthYear",DATA['field']['year_of_birth'])
-    submit_data()
+    clear_and_input("usernamereg-firstName",DATA['field']['first_name'],browser)
+    clear_and_input("usernamereg-lastName",DATA['field']['last_name'],browser)
+    clear_and_input("usernamereg-userId",DATA['field']['email'],browser)
+    clear_and_input("usernamereg-password",DATA['field']['password'],browser)
+    clear_and_input("usernamereg-birthYear",DATA['field']['year_of_birth'],browser)
+    submit_data(browser)
     sleep(10)
+    clear_and_input("usernamereg-phone",DATA['field']['phone_number'],browser)
+    submit_data(browser)
 
-    clear_and_input("usernamereg-phone",DATA['field']['phone_number'])
-    submit_data()
-   
-def save_csv(data):
-    myFile = open('yahoo_users.csv', 'w')
-    writer = csv.writer(myFile)
-    writer.writerow(['first_name', 'last_name', 'email','password','year_of_birth','phone_number'])
-    for user in data:
-        writer.writerow(user.values())
-    myFile.close()
-
-    
-    
-
-    
