@@ -8,8 +8,10 @@ from getUserdata import get_phone_number,get_user_info,get_validation_code
 # manage time sleep 
 from time import sleep
 import random
+#csv 
+import csv
 
-
+USER_INFO = []
 DATA = {
     "url":str,
     "field":{
@@ -50,8 +52,6 @@ def my_proxy(PROXY_HOST,PROXY_PORT):
         fp.update_preferences()
         return webdriver.Firefox(firefox_profile=fp)
 
-browser = my_proxy(HOST,PORT)
-#browser = webdriver.Firefox()
 
 def clear_and_input(ID,VALUE):
     elem = browser.find_element(By.ID,ID)
@@ -63,21 +63,44 @@ def submit_data():
     browser.find_element(By.ID,"reg-submit-button").click()
 
 
-   
-
-for i in range(10):
-    user = get_user_info()
-    phone= get_phone_number(i+1)
-    browser.get(DATA['url'])
-    assert "Yahoo" in browser.title
+def create():
+    browser = my_proxy(HOST,PORT)
+    #browser = webdriver.Firefox()
     
+    browser.get('https://www.fakenamegenerator.com/gen-random-us-uk.php')
+    
+    # create new tab for vsimcard and log in 
+    browser.execute_script("window.open('');")
+    browser.switch_to.window(browser.window_handles[1])
+   
+    browser.get("https://vsimcard.com/login.php")
+    assert "Vsimcard" in browser.title
+    browser.find_element(By.NAME,"username").send_keys(username)
+    sleep(1)
+    browser.find_element(By.NAME,"password").send_keys(pwd)
+    sleep(1)
+    browser.find_element(By.TAG_NAME,"form").submit()
+    sleep(5)
+    
+    user = get_user_info(browser)
+    code_validation = get_validation_code(browser):
+             
+    # fill all user data in DATA dict
     DATA['url'] = "https://login.yahoo.com/account/create"
-    DATA['field']["first_name"] = user[0]
-    DATA['field']["last_name"] = user[1]
-    DATA['field']["email"] = user[0]+"_"+user[1]+"_"+random.randint(1,1000)
+    DATA['field']["first_name"] = user["firstname"]
+    DATA['field']["last_name"] = user["lastname"]
+    DATA['field']["email"] = user["firstname"]+"_"+user["lastname"]+"_"+random.randint(1,1000)
     DATA['field']["password"] = "Azerty$$$123@"
     DATA['field']["year_of_birth"] = random.choice(YEARS)
-    DATA['field']['phone_number'] = phone[2:]
+    DATA['field']['phone_number'] = user["phone"]
+    
+    #save the user information in USER_INFO list
+    USER_INFO.append(DATA["field"])
+    
+    browser.execute_script("window.open('');")
+    browser.switch_to.window(browser.window_handles[2])
+    browser.get(DATA['url'])
+    assert "Yahoo" in browser.title
 
     clear_and_input("usernamereg-firstName",DATA['field']['first_name'])
     clear_and_input("usernamereg-lastName",DATA['field']['last_name'])
@@ -89,4 +112,16 @@ for i in range(10):
 
     clear_and_input("usernamereg-phone",DATA['field']['phone_number'])
     submit_data()
-    break
+   
+def save_csv(data):
+    myFile = open('yahoo_users.csv', 'w')
+    writer = csv.writer(myFile)
+    writer.writerow(['first_name', 'last_name', 'email','password','year_of_birth','phone_number'])
+    for user in data:
+        writer.writerow(user.values())
+    myFile.close()
+
+    
+    
+
+    
